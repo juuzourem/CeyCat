@@ -190,6 +190,8 @@ section {
     border-radius: 10px;
     border-left: 5px solid #a881b4;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    position: relative; /* İkonu konumlandırmak için */
+    padding-right: 45px; /* İkon için biraz daha yer aç */
 }
 
 .music-player p:first-child { /* Şarkı adı */
@@ -205,13 +207,16 @@ section {
     color: #b8b2c7;
     margin-top: 5px;
     margin-bottom: 0;
+    /* Word wrap eklenebilir uzun notlar için */
+    word-wrap: break-word;
+    white-space: pre-wrap; /* Boşlukları ve satır sonlarını koru */
 }
 
 .clickable-song {
     cursor: pointer;
 }
 
-.clickable-song:hover {
+.clickable-song:hover:not(.editing-description) { /* Düzenleme modunda değilken hover efekti */
     background-color: rgba(90, 83, 112, 0.9);
     transform: scale(1.02);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -281,9 +286,9 @@ section {
     position: absolute;
     top: 15px;
     right: 25px;
-    font-size: 32px; /* Biraz daha büyük */
+    font-size: 32px;
     font-weight: bold;
-    line-height: 1; /* Dikey hizalama için */
+    line-height: 1;
     transition: color 0.3s ease, transform 0.2s ease;
 }
 
@@ -297,9 +302,9 @@ section {
 
 /* Modal Form Stilleri */
 #add-song-form h2 {
-    margin-top: 0; /* Modal başlığı için üst boşluğu kaldır */
+    margin-top: 0;
     margin-bottom: 25px;
-    font-size: 1.8em; /* Biraz daha küçük */
+    font-size: 1.8em;
 }
 
 #add-song-form .form-group {
@@ -310,7 +315,7 @@ section {
     display: block;
     margin-bottom: 8px;
     color: #cab9d9;
-    font-weight: 600; /* Kalın yazı */
+    font-weight: 600;
     font-size: 0.95em;
 }
 
@@ -324,7 +329,7 @@ section {
     color: #e0dee6;
     font-size: 1em;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    font-family: 'Poppins', sans-serif; /* Fontu miras al */
+    font-family: 'Poppins', sans-serif;
 }
 
 #add-song-form input[type="text"]:focus,
@@ -336,7 +341,7 @@ section {
 
 #add-song-form textarea {
     resize: vertical;
-    min-height: 70px; /* Biraz daha yüksek */
+    min-height: 70px;
 }
 
 #add-song-form small {
@@ -352,6 +357,96 @@ section {
     margin-top: 10px;
     font-size: 1.2em;
 }
+
+
+/* ----- YENİ EKLENEN: Açıklama Düzenleme Stilleri ----- */
+.edit-description-icon {
+    position: absolute;
+    top: 20px; /* Dikey hizalama */
+    right: 15px;
+    font-size: 1.1em; /* İkon boyutu */
+    cursor: pointer;
+    color: #aaa;
+    transition: color 0.3s ease, transform 0.2s ease;
+    padding: 5px; /* Tıklama alanını artır */
+    line-height: 1;
+    /* CEYDA'YA GÖNDERMEDEN ÖNCE BU SATIRI AKTİF ET: */
+    /* display: none !important; */
+}
+
+.edit-description-icon:hover {
+    color: #cab9d9; /* Vurgu rengi */
+    transform: scale(1.1);
+}
+
+/* Düzenleme Alanı */
+.description-edit-area {
+    margin-top: 10px;
+    /* JS ile gösterilip gizlenecek */
+}
+
+.description-edit-area textarea {
+    width: 100%;
+    padding: 8px 10px;
+    background-color: rgba(255, 255, 255, 0.08); /* Hafif farklı arka plan */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #e0dee6;
+    font-size: 0.95em; /* Not fontuyla uyumlu */
+    min-height: 60px;
+    resize: vertical;
+    font-family: 'Poppins', sans-serif;
+    margin-bottom: 8px;
+}
+.description-edit-area textarea:focus {
+     outline: none;
+     border-color: #a881b4;
+     box-shadow: 0 0 8px rgba(168, 129, 180, 0.2);
+}
+
+/* Düzenleme Butonları */
+.edit-controls {
+    text-align: right; /* Butonları sağa yasla */
+}
+.edit-controls button {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85em;
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-left: 8px; /* Butonlar arası boşluk */
+}
+
+.save-desc-button {
+    background-color: #6a996a; /* Yeşilimsi */
+    color: white;
+}
+.save-desc-button:hover {
+    background-color: #81b481;
+    transform: scale(1.05);
+}
+
+.cancel-desc-button {
+     background-color: #996a6a; /* Kırmızımsı */
+     color: white;
+}
+.cancel-desc-button:hover {
+    background-color: #b48181;
+    transform: scale(1.05);
+}
+
+/* Düzenleme Modundayken Görünüm (İsteğe Bağlı) */
+.music-player.editing-description {
+     /* background-color: rgba(90, 83, 112, 0.9); */
+     /* border-left-color: #e8cfff; */
+     /* Hover efektini kaldırabiliriz */
+     transform: none;
+     box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); /* Normal gölge */
+}
+/* ----- Açıklama Düzenleme Stilleri Sonu ----- */
+
 
 /* Animasyon Keyframes */
 @keyframes fadeIn {
@@ -391,4 +486,6 @@ section {
     }
     .cat-hug { max-width: 140px; }
     #open-add-song-modal-button { font-size: 0.8em; padding: 6px 12px;}
+    .music-player { padding-right: 40px; } /* İkon için mobil padding */
+    .edit-description-icon { top: 15px; right: 10px; } /* İkon konumu mobil */
 }
