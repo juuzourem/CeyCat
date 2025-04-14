@@ -202,7 +202,6 @@ function createSongElement(song) {
         console.error("Şarkı elementi oluşturulamadı: Geçersiz veri veya konteyner yok.", song);
         return;
     }
-
     // Zaten ekli mi diye kontrol et (aynı video ID'li)
     if (document.querySelector(`.clickable-song[data-youtubeid="${song.videoId}"]`)) {
         console.warn(`Şarkı zaten ekli: ${song.title} (${song.videoId})`);
@@ -226,20 +225,39 @@ function createSongElement(song) {
     songElement.dataset.playerid = playerId; // Player ID'sini de sakla
     songElement.setAttribute('data-aos', 'fade-up'); // Animasyon ekle
 
-    songElement.innerHTML = `
-        <p>${song.title || 'Başlıksız Şarkı'}</p>
-        <p class="song-note">${song.description || ''}</p>
-    `;
+    // Şarkı içeriği ve notu
+    const songTitleP = document.createElement('p');
+    songTitleP.textContent = song.title || 'Başlıksız Şarkı';
+    const songNoteP = document.createElement('p');
+    songNoteP.classList.add('song-note');
+    songNoteP.textContent = song.description || ''; // Açıklamayı ekle
 
-    // 3. Tıklama olayını ekle
-    songElement.addEventListener('click', () => {
-        playSpecificSong(dynamicPlayers[playerId], `Dinamik Şarkı (${song.title || song.videoId})`);
+    // DÜZENLEME İKONU EKLEME
+    const editIcon = document.createElement('span');
+    editIcon.classList.add('edit-description-icon');
+    editIcon.innerHTML = '✏️'; // Emoji veya FontAwesome ikonu kullanabilirsin
+    editIcon.title = 'Açıklamayı düzenle'; // Hover metni
+    editIcon.addEventListener('click', (event) => {
+        event.stopPropagation(); // Şarkıyı çalma olayını tetikleme
+        enableDescriptionEditing(songElement, song.videoId);
+    });
+
+    songElement.appendChild(songTitleP);
+    songElement.appendChild(songNoteP);
+    songElement.appendChild(editIcon); // İkonu ekle
+
+    // 3. Şarkıyı çalma olayını şarkı kutucuğuna ekle (ikon hariç)
+    songElement.addEventListener('click', (event) => {
+        // Eğer tıklanan ikon veya düzenleme alanı içindeki bir şey değilse şarkıyı çal
+        if (!event.target.closest('.edit-description-icon') && !event.target.closest('.description-edit-area')) {
+             playSpecificSong(dynamicPlayers[playerId], `Dinamik Şarkı (${song.title || song.videoId})`);
+        }
     });
 
     container.appendChild(songElement);
     AOS.refresh(); // Yeni eklenen eleman için AOS'u yenile
 
-    // 4. YouTube Oynatıcısını Oluştur
+    // 4. YouTube Oynatıcısını Oluştur (hata yönetimi ile)
      try {
         dynamicPlayers[playerId] = new YT.Player(playerId, {
             height: '0', width: '0', videoId: song.videoId,
@@ -294,6 +312,117 @@ function loadSongs() {
         console.error("localStorage'dan yüklerken hata:", e);
         songs = []; // Hata durumunda sıfırla
         localStorage.removeItem('ceydaSongs'); // Bozuk veriyi temizle
+    }
+}
+
+
+// --- Açıklama Düzenleme Fonksiyonları ---
+
+function enableDescriptionEditing(songElement, videoId) {
+    // Zaten düzenleme modunda mı kontrol et
+    if (songElement.classList.contains('editing-description')) return;
+
+    // Başka bir şarkı düzenleniyorsa onu iptal et
+    const currentlyEditing = document.querySelector('.music-player.editing-description');
+    if (currentlyEditing) {
+        cancelDescriptionEditing(currentlyEditing);
+    }
+
+    const songNoteP = songElement.querySelector('.song-note');
+    const editIcon = songElement.querySelector('.edit-description-icon');
+    if (!songNoteP || !editIcon) return;
+
+    const currentDescription = songNoteP.textContent;
+
+    // Mevcut notu ve ikonu gizle
+    songNoteP.style.display = 'none';
+    editIcon.style.display = 'none'; // Düzenleme sırasında ikonu gizle
+
+    // Düzenleme alanını oluştur
+    const editAreaDiv = document.createElement('div');
+    editAreaDiv.classList.add('description-edit-area');
+
+    const textarea = document.createElement('textarea');
+    textarea.value = currentDescription;
+    textarea.rows = 3; // Başlangıç yüksekliği
+
+    const controlsDiv = document.createElement('div');
+    controlsDiv.classList.add('edit-controls');
+
+    const saveButton = document.createElement('button');
+    saveButton.textContent = 'Kaydet';
+    saveButton.classList.add('save-desc-button');
+    saveButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // Ana tıklama olayını tetikleme
+        saveDescriptionChange(songElement, videoId, textarea);
+    });
+
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'İptal';
+    cancelButton.classList.add('cancel-desc-button');
+    cancelButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // Ana tıklama olayını tetikleme
+        cancelDescriptionEditing(songElement);
+    });
+
+    controlsDiv.appendChild(saveButton);
+    controlsDiv.appendChild(cancelButton);
+
+    editAreaDiv.appendChild(textarea);
+    editAreaDiv.appendChild(controlsDiv);
+
+    // Düzenleme alanını not paragrafından sonra ekle
+    songNoteP.parentNode.insertBefore(editAreaDiv, songNoteP.nextSibling);
+
+    textarea.focus(); // Otomatik odaklan
+    textarea.select(); // İçeriği seçili hale getir (kolay silme/değiştirme için)
+    songElement.classList.add('editing-description'); // Düzenleme modunu işaretle
+}
+
+function saveDescriptionChange(songElement, videoId, textarea) {
+    const newDescription = textarea.value.trim();
+
+    // 1. `songs` dizisini güncelle
+    const songIndex = songs.findIndex(s => s.videoId === videoId);
+    if (songIndex > -1) {
+        songs[songIndex].description = newDescription;
+        console.log(`Açıklama güncellendi (${videoId}): ${newDescription}`);
+
+        // 2. localStorage'ı güncelle
+        saveSongs();
+
+        // 3. DOM'u güncelle (Düzenleme alanını kaldırıp notu göster)
+        cancelDescriptionEditing(songElement, newDescription); // İptal fonksiyonunu yeni değerle çağır
+
+    } else {
+        console.error(`Güncellenecek şarkı bulunamadı: ${videoId}`);
+        // Hata durumunda düzenleme modunu sadece iptal et
+        cancelDescriptionEditing(songElement);
+    }
+}
+
+// İptal fonksiyonu artık isteğe bağlı olarak yeni açıklamayı da ayarlayabilir
+function cancelDescriptionEditing(songElement, newDescription = null) {
+    // Düzenleme alanını kaldır
+    const editAreaDiv = songElement.querySelector('.description-edit-area');
+    if (editAreaDiv) {
+        editAreaDiv.remove();
+    }
+
+    // Orijinal notu (veya yeni kaydedileni) ve ikonu tekrar göster
+    const songNoteP = songElement.querySelector('.song-note');
+    if (songNoteP) {
+        if (newDescription !== null) { // Eğer yeni açıklama geldiyse onu yaz
+            songNoteP.textContent = newDescription;
+        }
+        songNoteP.style.display = ''; // Görünür yap
+    }
+    const editIcon = songElement.querySelector('.edit-description-icon');
+    if(editIcon) editIcon.style.display = ''; // İkonu göster
+
+    songElement.classList.remove('editing-description'); // Düzenleme modundan çık
+    if (newDescription === null) { // Sadece iptal edildiyse logla
+        console.log("Açıklama düzenleme iptal edildi.");
     }
 }
 
@@ -386,12 +515,17 @@ function setupEventListeners() {
     // Happier Than Ever Tıklama
     const happierSongElement = document.getElementById('song-happier');
     if (happierSongElement && happierPlayer) {
-        happierSongElement.addEventListener('click', () => {
-            playSpecificSong(happierPlayer, "Happier Than Ever");
+         // İKON İÇİN GÜNCELLEME: Tıklama olayını doğrudan şarkı kutucuğuna ekle
+        happierSongElement.addEventListener('click', (event) => {
+            // Eğer tıklanan ikon değilse şarkıyı çal (Happier Than Ever için ikon eklemediğimizden bu kontrol şimdilik gereksiz ama yapı kalsın)
+            if (!event.target.closest('.edit-description-icon')) {
+                 playSpecificSong(happierPlayer, "Happier Than Ever");
+            }
         });
     }
 
-    // Kayıtlı şarkılar için tıklama olayları (loadSongs -> createSongElement içinde eklendi)
+
+    // Kayıtlı şarkılar için tıklama ve düzenleme olayları (loadSongs -> createSongElement içinde eklendi)
 
     // Modal Pencere kurulumu
     setupModal();
