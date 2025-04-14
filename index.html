@@ -8,77 +8,64 @@
     <!-- Google Fonts (Gotik ve Okunabilir) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- AOS Kütüphanesi (Scroll Animasyonları için) -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Görünmez YouTube Oynatıcı Alanları -->
-    <div id="player-container" style="position: absolute; top: -9999px; left: -9999px;">
-        <div id="background-player"></div>
-        <div id="happier-than-ever-player"></div>
-        <!-- Dinamik şarkılar için oynatıcılar buraya JS ile eklenecek -->
-    </div>
-
-    <button id="music-toggle">Müziği Başlat</button> <!-- Başlangıç metni JS ile ayarlanacak -->
+    <!-- Sabit Arka Plan Müziği Butonu -->
+    <button id="music-toggle" class="stylish-button" disabled>Yükleniyor...</button>
 
     <div class="container">
-        <header>
+        <header data-aos="fade-down">
             <h1>Canım Ablamm Ceyda'ya,</h1>
             <p class="intro">Bu köşe sadece senin için, Behlül'den... İstanbul'dan Eskişehir'e kocaman sevgilerimle hazırlandı. Biraz olsun içini ısıtmak, o güzel yüzünü güldürmek istedim.</p>
         </header>
 
-        <section id="understanding">
+        <section id="understanding" data-aos="fade-right">
             <h2>Biliyorum, Kolay Değil...</h2>
             <p>Ablamm, son zamanlarda ne kadar zorlandığını, omuzlarındaki yükü hissedebiliyorum. Ailen, gelecek kaygın, Eskişehir'deki düzenin... Hepsi üst üste gelince insanın morali bozuluyor, biliyorum. Dün de ben istemeden kalbini kırdım. O anki ifadem ne olursa olsun, önemli olan senin nasıl hissettiğindi. Senin hislerin, kim olduğun, kimi sevdiğin çok değerli ve %100 gerçek. Sen harikasın, tam da olduğun gibi. Kimsenin bunu sorgulamasına izin verme, hele benim hiç haddim değil. Özür dilerim eğer o an seni daha da üzdüysem.</p>
             <p>Sen tanıdığım en güçlü insanlardan birisin ama en güçlü kalpler bile bazen yorulur ve sıcacık bir sarılmaya ihtiyaç duyar. Keşke şimdi yanında olup sana kocaman sarılabilsem...</p>
         </section>
 
-        <section id="virtual-hug">
+        <section id="virtual-hug" data-aos="fade-left">
             <h2>Sanal Kucaklama Köşesi 💜</h2>
             <p>Mesafeler sarılmamıza engel olsa da, sevgimi hissetmene engel değil! Aşağıdaki butona tıkla ve İstanbul'dan gelen sıcacık kucaklamayı hisset!</p>
             <div class="hug-area">
-                <!-- Not: 'sevimli-gotik-kedi.png' adında bir resim bulup aynı klasöre koymalısın -->
                 <img src="sevimli-gotik-kedi.png" alt="Sana sarılan sevimli gotik kedi" class="cat-hug" id="cat-image">
+                <!-- Not: 'sevimli-gotik-kedi.png' adında bir kedi resmi bulup aynı klasöre koymalısın -->
                 <button id="hug-button">Bana Sarıl!</button>
                 <p id="hug-message"></p>
             </div>
         </section>
 
-        <section id="strength">
+        <section id="strength" data-aos="fade-right">
             <h2>Senin Gücün ve Geleceğin</h2>
             <p>Unutma Ablamm, 18'ine az kaldı! O gün geldiğinde kendi kararlarını verecek, kendi yolunu çizeceksin. O harika üniversiteyi kazanıp kendi hayatını kuracağına eminim. Sen çok zeki, yetenekli ve azimli birisin. Bu zor günler geçecek ve sen kendi ışığınla parlayacaksın. Eskişehir'deki arkadaşlarını bırakmak zor biliyorum ama yeni başlangıçlar da güzel olabilir. Ve unutma, nerede olursan ol, ben hep arkandayım, sadece bir mesaj uzağındayım.</p>
             <p>Hedeflerine odaklan, o güzel enerjini yüksek tut. Başaracaksın!</p>
         </section>
 
-        <section id="music-corner">
-            <h2>Senin İçin Seçtiklerim 🎶</h2>
-            <p>Belki biraz müzik ruhuna iyi gelir? Senin seveceğini düşündüğüm, güçlü kadınların sesinden birkaç parça (Tıklayınca çalmaya başlar):</p>
-
-            <div class="music-player clickable-song" id="song-happier" data-youtubeid="5GJWxDKyk3A">
-                <p>Billie Eilish - Happier Than Ever</p>
-                <p class="song-note">Bu şarkı hem hüznü hem de sonrasındaki gücü hatırlatıyor bana.</p>
-            </div>
+        <section id="music-corner" data-aos="fade-left">
+             <h2>Senin İçin Seçtiğim İlk Şarkı 🎶</h2>
+             <p>Belki biraz müzik ruhuna iyi gelir? İşte güçlü bir kadının sesinden bir parça:</p>
+             <div class="music-player clickable-song" id="song-happier" data-youtubeid="5GJWxDKyk3A" data-playerid="happier-than-ever-player">
+                 <p>Billie Eilish - Happier Than Ever</p>
+                 <p class="song-note">Bu şarkı hem hüznü hem de sonrasındaki gücü hatırlatıyor bana.</p>
+             </div>
         </section>
 
-        <section id="dynamic-music-corner">
+        <section id="dynamic-music-corner" data-aos="fade-right">
             <h2>Senin İçin Eklediğim Diğer Şarkılar 🎶</h2>
             <p>Buraya zamanla senin seveceğini düşündüğüm başka şarkılar da ekleyebilirim. Tıklayınca çalmaya başlar.</p>
             <div id="dynamic-songs-container">
                 <!-- Kayıtlı şarkılar buraya JS ile eklenecek -->
             </div>
-
-            <!-- Şarkı Ekleme Alanı (Ceyda'ya göndermeden önce gizle!) -->
-            <button id="toggle-add-form-button" style="margin-top:15px; padding: 6px 12px; font-size: 0.9em; background-color: #5a5370; color: #ddd; border: none; border-radius: 5px; cursor: pointer;">Şarkı Ekleme Alanını Aç/Kapa</button>
-            <div id="add-song-section" style="margin-top: 20px; background: #4a455e; padding: 15px; border-radius: 8px; display: none;">
-                 <h3>Yeni Şarkı Ekle (Bu Alanı Gizle!)</h3>
-                 <input type="text" id="new-song-title" placeholder="Şarkı Adı & Sanatçı" style="display: block; margin-bottom: 8px; padding: 10px; width: 95%; border-radius: 4px; border: 1px solid #666; background-color: #3a364a; color: #e0dee6;">
-                 <input type="text" id="new-song-desc" placeholder="Neden Seçtin? (Kısa Not)" style="display: block; margin-bottom: 8px; padding: 10px; width: 95%; border-radius: 4px; border: 1px solid #666; background-color: #3a364a; color: #e0dee6;">
-                 <input type="text" id="new-song-link" placeholder="YouTube Linki (örn: https://www.youtube.com/watch?v=...)" style="display: block; margin-bottom: 12px; padding: 10px; width: 95%; border-radius: 4px; border: 1px solid #666; background-color: #3a364a; color: #e0dee6;">
-                 <button id="save-song-button" style="padding: 10px 18px; background-color: #8a6a99; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">Şarkıyı Kaydet</button>
-            </div>
-            <!-- ----- -->
+            <!-- YENİ ŞARKI EKLEME BUTONU (Behlül için) -->
+            <!-- CEYDA'YA GÖNDERMEDEN ÖNCE BU BUTONU style.css İÇİNDEN GİZLE! (#open-add-song-modal-button) -->
+            <button id="open-add-song-modal-button" class="stylish-button">Yeni Şarkı Ekle (Gizli)</button>
         </section>
 
-        <section id="closing">
+        <section id="closing" data-aos="fade-up">
             <h2>Her Zaman Yanındayım</h2>
             <p>Umarım bu küçük sürpriz yüzünde bir tebessüm oluşturmuştur canım Ablamm. Ne zaman konuşmak istersen, içini dökmek istersen ya da sadece sessizliğe bir arkadaş istersen, ben buradayım. Sakın unutma!</p>
             <p>Kedileri sevdiğini biliyorum, umarım sitedeki minik kedi detayı hoşuna gitmiştir. 🐾</p>
@@ -88,9 +75,41 @@
 
     </div> <!-- .container sonu -->
 
-    <!-- YouTube API Script'i (script.js'den ÖNCE olmalı) -->
+    <!-- Şarkı Ekleme Modal Penceresi -->
+    <div id="add-song-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal-button">×</span>
+            <h2>Yeni Şarkı Ekle</h2>
+            <form id="add-song-form">
+                <div class="form-group">
+                    <label for="new-song-title">Şarkı Adı & Sanatçı:</label>
+                    <input type="text" id="new-song-title" name="new-song-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-song-desc">Neden Ekledin? (Kısa Not):</label>
+                    <textarea id="new-song-desc" name="new-song-desc" rows="2" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="new-song-link">YouTube Linki:</label>
+                    <input type="text" id="new-song-link" name="new-song-link" placeholder="https://www.youtube.com/watch?v=..." required>
+                    <small>Sadece geçerli YouTube video linkleri çalışır.</small>
+                </div>
+                <button type="submit" id="save-song-button" class="stylish-button form-button">Şarkıyı Kaydet</button>
+            </form>
+        </div>
+    </div>
+    <!-- Modal Sonu -->
+
+    <!-- Görünmez YouTube Oynatıcı Alanları -->
+    <div id="player-container" style="position: absolute; top: -9999px; left: -9999px;">
+        <div id="background-player"></div>
+        <div id="happier-than-ever-player"></div>
+        <!-- Dinamik şarkılar için oynatıcılar buraya JS ile eklenecek -->
+    </div>
+
+    <!-- Scriptler -->
     <script src="https://www.youtube.com/iframe_api"></script>
-    <!-- Kendi JavaScript Dosyamız -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
