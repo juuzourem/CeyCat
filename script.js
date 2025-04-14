@@ -1,153 +1,165 @@
-// Global değişkenler YouTube oynatıcıları ve durumu takip etmek için
+// --- Global Değişkenler ---
 let backgroundPlayer;
 let happierPlayer;
-let dynamicPlayers = {}; // Dinamik eklenen şarkıların oynatıcılarını {playerId: playerInstance} şeklinde tutar
-let currentlyPlayingPlayer = null; // Şu an hangi oynatıcının çaldığını takip et (YT.Player instance)
-let songs = []; // Şarkı listesini [{title, description, videoId}, ...] şeklinde tutacak dizi
+let dynamicPlayers = {}; // Dinamik şarkıların oynatıcıları: { playerId: playerInstance }
+let currentlyPlayingPlayer = null; // Şu an çalan YT.Player instance'ı
+let songs = []; // Kayıtlı şarkılar: [{ title, description, videoId }]
 
-const backgroundVideoId = 'hyj4JFSErrw'; // Arka plan müziği video ID'si (Örnek: Lo-fi Girl)
+const backgroundVideoId = 'hyj4JFSErrw'; // Arka plan video ID'si
 const happierVideoId = '5GJWxDKyk3A';   // Happier Than Ever video ID'si
 
-// --- YouTube IFrame Player API Hazırlık Fonksiyonu ---
-// Bu fonksiyon API script'i yüklendiğinde otomatik olarak çağrılır
+// --- YouTube IFrame Player API Hazırlık ---
+// API yüklendiğinde otomatik çağrılır
 function onYouTubeIframeAPIReady() {
     console.log("YouTube API Hazır.");
-    const musicToggle = document.getElementById('music-toggle');
-
-    // 1. Arka Plan Oynatıcısını Oluştur
     try {
+        // 1. Arka Plan Oynatıcısını Oluştur
         backgroundPlayer = new YT.Player('background-player', {
-            height: '0', // Görünmez
-            width: '0',
-            videoId: backgroundVideoId,
-            playerVars: {
-                'playsinline': 1,    // Mobil cihazlarda tam ekran olmadan oynatma
-                'autoplay': 0,       // Otomatik başlatma (genelde engellenir, kullanıcı başlatmalı)
-                'controls': 0,       // YouTube kontrollerini gizle
-                'loop': 1,           // Döngüye al (playlist ile birlikte çalışır)
-                'playlist': backgroundVideoId // Döngü için video ID'sini tekrar playlist olarak vermek gerekir
-            },
-            events: {
-                'onReady': onBackgroundPlayerReady, // Oynatıcı hazır olduğunda
-                'onStateChange': onPlayerStateChange // Oynatıcı durumu değiştiğinde
-            }
+            height: '0', width: '0', videoId: backgroundVideoId,
+            playerVars: { 'playsinline': 1, 'loop': 1, 'playlist': backgroundVideoId }, // loop için playlist gerekli
+            events: { 'onReady': onBackgroundPlayerReady, 'onStateChange': onPlayerStateChange }
         });
-    } catch (e) {
-        console.error("Arka plan oynatıcı oluşturulamadı:", e);
-        if(musicToggle) musicToggle.textContent = "Müzik Hatası";
-    }
 
-    // 2. Happier Than Ever Oynatıcısını Oluştur
-    try {
+        // 2. Happier Than Ever Oynatıcısını Oluştur
         happierPlayer = new YT.Player('happier-than-ever-player', {
-            height: '0',
-            width: '0',
-            videoId: happierVideoId,
-            playerVars: { 'playsinline': 1, 'controls': 0 },
-            events: {
-                'onStateChange': onPlayerStateChange
-            }
+            height: '0', width: '0', videoId: happierVideoId,
+            playerVars: { 'playsinline': 1 },
+            events: { 'onStateChange': onPlayerStateChange }
         });
+
     } catch (e) {
-        console.error("Happier Than Ever oynatıcı oluşturulamadı:", e);
+        console.error("Ana oynatıcılar oluşturulurken hata:", e);
+        alert("Müzik oynatıcıları yüklenirken bir sorun oluştu. Sayfayı yenilemeyi deneyin.");
+        // Hata durumunda müzik butonunu bilgilendirici yap
+        const musicToggle = document.getElementById('music-toggle');
+        if (musicToggle) {
+            musicToggle.textContent = "Hata!";
+            musicToggle.disabled = true;
+        }
+        return; // API hatası varsa devam etme
     }
 
-    // 3. Kayıtlı Dinamik Şarkıları Yükle ve Oynatıcılarını Oluştur
-    // Bu fonksiyon içinde her şarkı için YT.Player instance'ı oluşturulur.
+    // 3. Kayıtlı Dinamik Şarkıları Yükle (Bu fonksiyon içinde oynatıcılar oluşturulur)
     loadSongs();
-
-    // 4. Event Listener'ları Kurulumu (Oynatıcıların başlatılmasından sonra)
-    setupEventListeners();
 }
 
 // --- Oynatıcı Hazır ve Durum Değişikliği Olayları ---
 function onBackgroundPlayerReady(event) {
-    // Oynatıcı hazır olduğunda, sesi biraz kısabiliriz ve butonu aktif edebiliriz
-    event.target.setVolume(40); // Sesi %40 yapalım (isteğe bağlı)
-    console.log("Arka plan oynatıcı hazır ve sesi ayarlandı.");
-    const musicToggle = document.getElementById('music-toggle');
-    if (musicToggle) {
-        musicToggle.disabled = false; // Butonu etkinleştir
-        musicToggle.textContent = "Arka Plan Müziğini Başlat"; // Başlangıç metni
-    }
+    console.log("Arka plan oynatıcı hazır.");
+    event.target.setVolume(40); // Başlangıç sesi
+    // Arka plan oynatıcı hazır olunca diğer event listenerları kurabiliriz
+    setupEventListeners();
 }
 
 function onPlayerStateChange(event) {
     const changedPlayer = event.target;
     const playerState = event.data;
+    const playerId = findPlayerId(changedPlayer); // Yardımcı fonksiyonla ID al
+    console.log(`State Değişti: ${playerId}, Durum: ${playerState}`);
 
-    // Bir video OYNATILIYOR durumuna geçtiğinde (YT.PlayerState.PLAYING = 1)
-    if (playerState === YT.PlayerState.PLAYING) {
-        console.log("Bir oynatıcı çalmaya başladı.");
-        // Eğer çalan oynatıcı şu an aktif olandan farklıysa, öncekini durdur
+    // Bir video çalmaya başladığında (PLAYING = 1)
+    if (playerState == YT.PlayerState.PLAYING) {
+        console.log(`Oynatılıyor: ${playerId}`);
+        // Eğer farklı bir oynatıcı çalmaya başladıysa, öncekini durdur
         if (currentlyPlayingPlayer && currentlyPlayingPlayer !== changedPlayer) {
-            console.log("Başka bir oynatıcı çalıyordu, durduruluyor.");
-            // Arka plan müziği çalıyorsa ve başka bir şarkı başladıysa, arka planı durdur
-            if (currentlyPlayingPlayer === backgroundPlayer && changedPlayer !== backgroundPlayer) {
-                pauseBackgroundMusic(false); // Buton yazısını değiştirme (opsiyonel)
-            }
-            // Başka bir şarkı çalıyorsa ve yeni şarkı (veya arka plan) başladıysa, eskisini durdur
-            else if (currentlyPlayingPlayer !== backgroundPlayer) {
-                 currentlyPlayingPlayer.pauseVideo();
+            const previousPlayerId = findPlayerId(currentlyPlayingPlayer);
+            console.log(`Önceki oynatıcı (${previousPlayerId}) durduruluyor.`);
+            // Arka plan çalıyorsa özel fonksiyonla durdur (buton için)
+            if(currentlyPlayingPlayer === backgroundPlayer) {
+                pauseBackgroundMusic(false); // Buton yazısını hemen değiştirme
+            } else {
+                currentlyPlayingPlayer.pauseVideo();
             }
         }
-         // Şu an çalan oynatıcıyı güncelle
+        // Şu an çalan oynatıcıyı güncelle
         currentlyPlayingPlayer = changedPlayer;
-
-        // Eğer başlayan arka plan ise, butonu güncelle
-        if (currentlyPlayingPlayer === backgroundPlayer) {
-             const musicToggle = document.getElementById('music-toggle');
-             if (musicToggle) musicToggle.textContent = "Arka Plan Müziğini Durdur";
-        }
+        // Butonları ve durumu güncelle
+        updateMusicToggleButton(changedPlayer === backgroundPlayer);
 
     }
-    // Bir video DURAKLATILDIĞINDA (YT.PlayerState.PAUSED = 2) veya BİTTİĞİNDE (YT.PlayerState.ENDED = 0)
-    else if (playerState === YT.PlayerState.PAUSED || playerState === YT.PlayerState.ENDED) {
-        // Eğer duraklatılan/biten video şu an aktif olan ise, aktif oynatıcıyı sıfırla
+    // Bir video duraklatıldığında veya bittiğinde (PAUSED = 2, ENDED = 0)
+    else if (playerState == YT.PlayerState.PAUSED || playerState == YT.PlayerState.ENDED) {
+        console.log(`Durdu/Bitti: ${playerId}`);
+        // Eğer duran/biten oynatıcı şu an aktif olarak işaretli olan ise, aktif oynatıcıyı temizle
+        // (Başka bir şarkı başlatıldığında zaten temizleniyor, bu manuel durdurma/bitme için)
         if (currentlyPlayingPlayer === changedPlayer) {
-            console.log("Aktif oynatıcı durdu/bitti.");
-             // Eğer duran arka plan ise butonu güncelle
-            if(changedPlayer === backgroundPlayer) {
-                const musicToggle = document.getElementById('music-toggle');
-                if (musicToggle) musicToggle.textContent = "Arka Plan Müziğini Başlat";
-                 // Loop çalışmazsa diye bittiğinde tekrar sıraya almayı deneyebiliriz (genelde playlist yeterli)
-                 // if(playerState === YT.PlayerState.ENDED) {
-                 //     backgroundPlayer.playVideo(); // Tekrar başlatmayı dene
-                 // }
+            currentlyPlayingPlayer = null;
+            console.log("Aktif oynatıcı temizlendi.");
+            // Eğer duran/biten arka plan müziği ise, butonu güncelle
+            if (changedPlayer === backgroundPlayer) {
+                 updateMusicToggleButton(false); // Durdu durumuna getir
             }
-            currentlyPlayingPlayer = null; // Artık aktif bir oynatıcı yok (bu duraklatma için önemli)
         }
+    }
+    // Arka plan video bittiğinde (loop çalışmazsa diye)
+    if (playerState == YT.PlayerState.ENDED && changedPlayer === backgroundPlayer) {
+        console.log("Arka plan video bitti (loop bekleniyordu).");
+        updateMusicToggleButton(false); // Butonu 'Başlat' yap
+        currentlyPlayingPlayer = null;
     }
 }
 
 // --- Yardımcı Fonksiyonlar ---
 
-// YouTube URL'sinden Video ID'sini çıkaran fonksiyon
+// YouTube URL'sinden Video ID'sini çıkarır
 function getYoutubeId(url) {
     if (!url) return null;
     let ID = '';
-    // URL'yi normalize et ve ID'yi bulmaya çalış
     url = url.replace(/(>|<)/gi, '').split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/);
     if (url[2] !== undefined) {
         ID = url[2].split(/[^0-9a-z_\-]/i);
         ID = ID[0];
     } else {
-        // Eğer yukarıdaki desenler uymazsa, URL'nin kendisi ID olabilir mi diye bak
-        ID = url && url[0].length === 11 ? url[0] : null;
+        ID = url; // Sadece ID girilmiş olabilir
     }
-    // YouTube ID'leri genellikle 11 karakterlidir
-    return ID && ID.length === 11 ? ID : null;
+    // YouTube ID'leri genellikle 11 karakterlidir, bunu kontrol edelim
+    return ID && /^[a-zA-Z0-9_-]{11}$/.test(ID) ? ID : null;
 }
 
 
-// Arka plan müziğini durdurma ve butonu güncelleme
+// Belirli bir şarkıyı oynatır, diğerlerini durdurur
+function playSpecificSong(playerInstance, playerName) {
+     if (!playerInstance || typeof playerInstance.playVideo !== 'function') {
+        console.error(`${playerName} oynatıcı bulunamadı veya hazır değil!`);
+        alert(`${playerName} şarkısı şu an çalınamıyor. Lütfen biraz bekleyip tekrar deneyin.`);
+        return;
+    }
+    console.log(`${playerName} çalma isteği...`);
+
+    // Mevcut olanı durdur (kendisi değilse)
+    if (currentlyPlayingPlayer && currentlyPlayingPlayer !== playerInstance) {
+        const previousPlayerId = findPlayerId(currentlyPlayingPlayer);
+        console.log(`Önceki oynatıcı (${previousPlayerId}) durduruluyor.`);
+        if(currentlyPlayingPlayer === backgroundPlayer) {
+           pauseBackgroundMusic(true); // Butonu da güncelle
+        } else {
+           currentlyPlayingPlayer.pauseVideo();
+        }
+        currentlyPlayingPlayer = null; // Önceki oynatıcıyı temizle
+    } else if (currentlyPlayingPlayer === playerInstance) {
+        // Eğer zaten bu çalıyorsa, tekrar tıklanınca durdur
+         console.log(`${playerName} zaten çalıyordu, durduruluyor.`);
+         playerInstance.pauseVideo();
+         // currentlyPlayingPlayer = null; // State change halledecek
+         // updateMusicToggleButton(false); // State change halledecek (eğer arka plan ise)
+        return;
+    }
+
+    // İstenen şarkıyı oynat
+    console.log(`${playerName} oynatılıyor.`);
+    playerInstance.seekTo(0); // Başa sar
+    playerInstance.playVideo();
+    // `currentlyPlayingPlayer` state change içinde ayarlanacak
+}
+
+// Arka plan müziğini durdurur
 function pauseBackgroundMusic(updateButtonText = true) {
     if (backgroundPlayer && typeof backgroundPlayer.pauseVideo === 'function') {
         backgroundPlayer.pauseVideo();
         if (updateButtonText) {
-            const musicToggle = document.getElementById('music-toggle');
-            if (musicToggle) musicToggle.textContent = "Arka Plan Müziğini Başlat";
+             updateMusicToggleButton(false); // Durdu durumuna getir
         }
+        // Eğer aktif oynatıcı arka plan ise temizle (state change'den önce)
         if (currentlyPlayingPlayer === backgroundPlayer) {
             currentlyPlayingPlayer = null;
         }
@@ -155,174 +167,107 @@ function pauseBackgroundMusic(updateButtonText = true) {
     }
 }
 
-// Şarkı elementini (HTML) ve oynatıcısını (JS) oluşturan fonksiyon
-function createSongElement(song, isInitialLoad = false) {
+// Sabit müzik butonunu günceller (Görünüm ve Class)
+function updateMusicToggleButton(isPlaying) {
+    const musicToggle = document.getElementById('music-toggle');
+    if (musicToggle) {
+        musicToggle.disabled = false; // Artık hazır, etkinleştir
+        if (isPlaying) {
+            musicToggle.textContent = "Müziği Durdur";
+            musicToggle.classList.add('playing');
+        } else {
+            musicToggle.textContent = "Müziği Başlat";
+            musicToggle.classList.remove('playing');
+        }
+    }
+}
+
+// Player instance'ından ID'sini bulur (Debug ve kontrol için)
+function findPlayerId(playerInstance) {
+    if (playerInstance === backgroundPlayer) return 'background-player';
+    if (playerInstance === happierPlayer) return 'happier-than-ever-player';
+    for (const id in dynamicPlayers) {
+        if (dynamicPlayers[id] === playerInstance) return id;
+    }
+    return 'unknown-player';
+}
+
+
+// --- Şarkı Ekleme ve Listeleme ---
+
+// Yeni şarkı elementini ve oynatıcısını oluşturur
+function createSongElement(song) {
     const container = document.getElementById('dynamic-songs-container');
     if (!container || !song || !song.videoId) {
-        console.warn("Şarkı elementi oluşturulamadı, eksik bilgi:", song);
-        return;
-    };
-
-    // Benzersiz ID'ler oluştur (sayfa yenilense bile tutarlı olması için videoId kullan)
-    const elementId = `song-${song.videoId}`;
-    const playerId = `player-${song.videoId}`;
-
-    // Eğer bu ID ile bir element zaten varsa ekleme (sayfa yenilenince dublike olmasın)
-    if (document.getElementById(elementId)) {
-        console.log(`Element zaten var: ${elementId}`);
-        // Oynatıcısı yoksa oluşturmayı dene (nadiren gerekir)
-        if (!dynamicPlayers[playerId] && typeof YT !== 'undefined') {
-             createDynamicPlayerInstance(playerId, song.videoId);
-        }
+        console.error("Şarkı elementi oluşturulamadı: Geçersiz veri veya konteyner yok.", song);
         return;
     }
 
-    // 1. Oynatıcı için div oluştur (görünmez alana)
+    // Zaten ekli mi diye kontrol et (aynı video ID'li)
+    if (document.querySelector(`.clickable-song[data-youtubeid="${song.videoId}"]`)) {
+        console.warn(`Şarkı zaten ekli: ${song.title} (${song.videoId})`);
+        return; // Eğer zaten varsa tekrar ekleme
+    }
+
+    const uniqueSuffix = Date.now(); // ID'lerin benzersiz olmasını garantile
+    const songElementId = `song-${song.videoId}-${uniqueSuffix}`;
+    const playerId = `player-${song.videoId}-${uniqueSuffix}`;
+
+    // 1. Oynatıcı için div oluştur ve görünmez alana ekle
     const playerDiv = document.createElement('div');
     playerDiv.id = playerId;
-    const playerContainer = document.getElementById('player-container');
-    if(playerContainer) playerContainer.appendChild(playerDiv);
+    document.getElementById('player-container').appendChild(playerDiv);
 
-    // 2. Şarkı kutucuğunu (HTML) oluştur
+    // 2. Şarkı kutucuğunu oluştur
     const songElement = document.createElement('div');
     songElement.classList.add('music-player', 'clickable-song');
-    songElement.id = elementId;
-    songElement.dataset.youtubeid = song.videoId; // Video ID'sini sakla
-    songElement.dataset.playerid = playerId;     // Player ID'sini sakla
+    songElement.id = songElementId;
+    songElement.dataset.youtubeid = song.videoId;
+    songElement.dataset.playerid = playerId; // Player ID'sini de sakla
+    songElement.setAttribute('data-aos', 'fade-up'); // Animasyon ekle
 
     songElement.innerHTML = `
         <p>${song.title || 'Başlıksız Şarkı'}</p>
         <p class="song-note">${song.description || ''}</p>
-        <button class="remove-song-button" data-videoid="${song.videoId}" style="float: right; margin-top: -35px; background: #5a5370; border: none; color: #ccc; padding: 3px 7px; border-radius: 4px; cursor: pointer; font-size: 0.8em;">Sil</button>
     `;
 
-    // Tıklama olayını ekle
-    songElement.addEventListener('click', (event) => {
-        // Silme butonuna tıklandıysa oynatmayı tetikleme
-        if (event.target.classList.contains('remove-song-button')) {
-            return;
-        }
-        playDynamicSong(playerId, song.videoId);
+    // 3. Tıklama olayını ekle
+    songElement.addEventListener('click', () => {
+        playSpecificSong(dynamicPlayers[playerId], `Dinamik Şarkı (${song.title || song.videoId})`);
     });
 
-     // Silme Butonu Olayı
-    const removeButton = songElement.querySelector('.remove-song-button');
-    if(removeButton) {
-        removeButton.addEventListener('click', () => {
-            removeSong(song.videoId);
-        });
-    }
-
     container.appendChild(songElement);
+    AOS.refresh(); // Yeni eklenen eleman için AOS'u yenile
 
-    // 3. YouTube Oynatıcısını (YT.Player instance) Oluştur
-    // API hazırsa hemen oluştur, değilse API hazır olduğunda oluşturulacak
-    if (typeof YT !== 'undefined' && YT.Player) {
-        createDynamicPlayerInstance(playerId, song.videoId);
-    } else {
-        console.log(`API henüz hazır değil, oynatıcı (${playerId}) daha sonra oluşturulacak.`);
-        // API hazır olduğunda loadSongs tekrar çağrılabilir veya bu fonksiyon çağrılabilir.
-        // Genellikle loadSongs'un APIReady içinde çağrılması yeterlidir.
-    }
-}
-
-// Dinamik oynatıcı instance'ını oluşturan ayrı fonksiyon
-function createDynamicPlayerInstance(playerId, videoId) {
-     if (dynamicPlayers[playerId]) {
-         console.log(`Oynatıcı zaten mevcut: ${playerId}`);
-         return; // Zaten varsa tekrar oluşturma
-     }
+    // 4. YouTube Oynatıcısını Oluştur
      try {
         dynamicPlayers[playerId] = new YT.Player(playerId, {
-            height: '0',
-            width: '0',
-            videoId: videoId,
-            playerVars: { 'playsinline': 1, 'controls': 0 },
-            events: {
-                'onStateChange': onPlayerStateChange
-            }
+            height: '0', width: '0', videoId: song.videoId,
+            playerVars: { 'playsinline': 1 },
+            events: { 'onStateChange': onPlayerStateChange }
         });
-        console.log(`Dinamik oynatıcı oluşturuldu ve eklendi: ${playerId}`);
+        console.log(`Dinamik oynatıcı oluşturuldu: ${playerId} - ${song.title}`);
     } catch(e) {
         console.error(`Oynatıcı oluşturulamadı (${playerId}):`, e);
-        // Hata durumunda ilgili HTML elementini de kaldırabiliriz.
-        const songElement = document.getElementById(`song-${videoId}`);
-        if (songElement) songElement.remove();
+        // Hata durumunda eklenen DOM elemanlarını geri al
+        container.removeChild(songElement);
+        document.getElementById('player-container').removeChild(playerDiv);
+        // Kullanıcıya bilgi verilebilir
+        alert(`"${song.title}" şarkısı için oynatıcı oluşturulamadı. Lütfen tekrar deneyin veya linki kontrol edin.`);
+        // Hatalı şarkıyı 'songs' dizisinden ve localStorage'dan da silmek mantıklı olabilir.
+        songs = songs.filter(s => s.videoId !== song.videoId);
+        saveSongs();
     }
 }
-
-// Dinamik şarkıyı oynatma fonksiyonu
-function playDynamicSong(playerId, videoId) {
-    const player = dynamicPlayers[playerId];
-    if (player && typeof player.playVideo === 'function') {
-        console.log(`Oynatılıyor: ${playerId} - ${videoId}`);
-
-        // Diğerlerini durdur (arka plan dahil)
-        if (currentlyPlayingPlayer && currentlyPlayingPlayer !== player) {
-             // Eğer arka plan çalıyorsa özel fonksiyonu kullan
-             if(currentlyPlayingPlayer === backgroundPlayer) {
-                pauseBackgroundMusic(false); // Buton yazısını değiştirme
-             } else {
-                currentlyPlayingPlayer.pauseVideo(); // Diğer şarkıyı durdur
-             }
-        }
-
-        // Şarkıyı çal
-        player.playVideo();
-        currentlyPlayingPlayer = player; // Şu an çalanı güncelle (onStateChange de yapar ama burada da yapalım)
-    } else {
-        console.error(`Oynatıcı bulunamadı veya geçerli değil: ${playerId}`);
-        // Oynatıcı yoksa oluşturmayı deneyebiliriz (eğer API geç yüklenmişse)
-        if (typeof YT !== 'undefined' && YT.Player && !player) {
-             console.log(`Oynatıcı (${playerId}) yoktu, oluşturuluyor...`);
-             createDynamicPlayerInstance(playerId, videoId);
-             // Kısa bir süre sonra tekrar oynatmayı dene
-             setTimeout(() => playDynamicSong(playerId, videoId), 500);
-        } else {
-            alert("Şarkı oynatıcısı yüklenemedi. Sayfayı yenileyip tekrar deneyebilirsin.");
-        }
-    }
-}
-
-// Şarkıyı listeden ve ekrandan silme fonksiyonu
-function removeSong(videoId) {
-    console.log(`Şarkı siliniyor: ${videoId}`);
-    // 1. songs dizisinden kaldır
-    songs = songs.filter(song => song.videoId !== videoId);
-
-    // 2. localStorage'ı güncelle
-    saveSongs();
-
-    // 3. Ekrandaki HTML elementini kaldır
-    const songElement = document.getElementById(`song-${videoId}`);
-    if (songElement) {
-        songElement.remove();
-    }
-
-    // 4. Oynatıcı instance'ını ve div'ini kaldır
-    const playerId = `player-${videoId}`;
-    if (dynamicPlayers[playerId]) {
-        if (typeof dynamicPlayers[playerId].destroy === 'function') {
-            dynamicPlayers[playerId].destroy(); // Oynatıcıyı temizle
-        }
-        delete dynamicPlayers[playerId]; // Nesneden kaldır
-    }
-    const playerDiv = document.getElementById(playerId);
-    if (playerDiv) {
-        playerDiv.remove();
-    }
-    console.log(`Şarkı (${videoId}) başarıyla silindi.`);
-}
-
 
 // --- localStorage İşlemleri ---
 function saveSongs() {
     try {
         localStorage.setItem('ceydaSongs', JSON.stringify(songs));
-        console.log("Şarkılar localStorage'a kaydedildi.");
+        console.log("Şarkılar kaydedildi:", songs);
     } catch (e) {
         console.error("localStorage'a kaydederken hata:", e);
-        // alert("Tarayıcı ayarlarınız nedeniyle şarkılar kaydedilemedi.");
+        // Kullanıcıya bilgi verilebilir, örn. tarayıcı ayarları vs.
     }
 }
 
@@ -331,23 +276,19 @@ function loadSongs() {
         const storedSongs = localStorage.getItem('ceydaSongs');
         if (storedSongs) {
             songs = JSON.parse(storedSongs);
-            console.log("localStorage'dan şarkılar yüklendi:", songs);
-
-            // Temiz bir başlangıç için konteyneri boşalt (isteğe bağlı, dublike engelleme varsa gerekmeyebilir)
-             const container = document.getElementById('dynamic-songs-container');
-            // if(container) container.innerHTML = ''; // Yeniden oluşturma için temizle
-
-            // Her şarkı için elementi ve oynatıcıyı oluştur/kontrol et
+            console.log("Şarkılar yüklendi:", songs);
+            const container = document.getElementById('dynamic-songs-container');
+            if(container) container.innerHTML = ''; // Başlangıçta temizle
+            // Her şarkı için elementi ve oynatıcıyı oluştur
             songs.forEach(song => {
-                 if (song && song.videoId) {
-                     createSongElement(song, true); // Elementi oluştur/kontrol et
-                 } else {
-                     console.warn("localStorage'dan geçersiz şarkı verisi geldi:", song);
-                 }
+                if (song && song.videoId) {
+                    createSongElement(song); // Bu fonksiyon oynatıcıyı da oluşturur
+                } else {
+                    console.warn("localStorage'dan geçersiz şarkı verisi okundu:", song);
+                }
             });
         } else {
-            songs = []; // Eğer kayıt yoksa boş diziyle başla
-            console.log("Kaydedilmiş şarkı bulunamadı.");
+            songs = []; // Kayıt yoksa boş dizi
         }
     } catch (e) {
         console.error("localStorage'dan yüklerken hata:", e);
@@ -357,135 +298,115 @@ function loadSongs() {
 }
 
 
-// --- Event Listener Kurulumu ---
-// Bu fonksiyon onYouTubeIframeAPIReady içinde çağrılacak
-function setupEventListeners() {
-    console.log("Event Listener'lar kuruluyor.");
-    const hugButton = document.getElementById('hug-button');
-    const hugMessage = document.getElementById('hug-message');
-    const catImage = document.getElementById('cat-image');
-    const musicToggle = document.getElementById('music-toggle');
-    const happierSongElement = document.getElementById('song-happier');
-    const addSongSection = document.getElementById('add-song-section');
-    const toggleAddFormButton = document.getElementById('toggle-add-form-button');
-    const saveSongButton = document.getElementById('save-song-button');
+// --- Modal Pencere İşlevleri ---
+function setupModal() {
+    const modal = document.getElementById('add-song-modal');
+    const openModalButton = document.getElementById('open-add-song-modal-button');
+    const closeModalButton = document.querySelector('.close-modal-button');
+    const addSongForm = document.getElementById('add-song-form');
 
-    // Sanal Sarılma
-    if (hugButton && hugMessage && catImage) {
-        hugButton.addEventListener('click', () => {
-            const messages = [ /*...*/ ]; // Mesajları ekle
-            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-            hugMessage.textContent = randomMessage;
-            hugMessage.classList.add('visible');
-            catImage.style.transform = 'scale(1.1)';
-            setTimeout(() => catImage.style.transform = 'scale(1)', 200);
-             // Mesajı bir süre sonra kaldırmak istersen:
-             setTimeout(() => hugMessage.classList.remove('visible'), 5000);
-        });
-    } else { console.error("Sarılma butonu elementleri bulunamadı."); }
+    function openModal() {
+        if (modal) modal.style.display = 'block';
+    }
+    function closeModal() {
+        if (modal) modal.style.display = 'none';
+        if (addSongForm) addSongForm.reset(); // Kapatırken formu temizle
+    }
 
-    // Arka Plan Müziği Aç/Kapa
-    if (musicToggle) {
-         // Başlangıçta butonu devre dışı bırak, API hazır olunca aktifleşecek
-        musicToggle.disabled = true;
-        musicToggle.textContent = "Müzik Yükleniyor...";
+    if (openModalButton) openModalButton.addEventListener('click', openModal);
+    if (closeModalButton) closeModalButton.addEventListener('click', closeModal);
+    window.addEventListener('click', (event) => { if (event.target == modal) closeModal(); });
 
-        musicToggle.addEventListener('click', () => {
-             if (!backgroundPlayer || typeof backgroundPlayer.getPlayerState !== 'function') {
-                 console.error("Arka plan oynatıcı henüz hazır değil veya geçerli değil.");
-                 alert("Müzik oynatıcı henüz hazır değil, lütfen biraz bekleyin.");
-                 return;
-             }
-
-            const playerState = backgroundPlayer.getPlayerState();
-            if (playerState === YT.PlayerState.PLAYING) {
-                pauseBackgroundMusic(); // Durdurma fonksiyonunu kullan
-            } else {
-                 // Diğerlerini durdur
-                 if (currentlyPlayingPlayer && currentlyPlayingPlayer !== backgroundPlayer) {
-                    currentlyPlayingPlayer.pauseVideo();
-                 }
-                console.log("Arka plan müziği başlatılıyor...");
-                backgroundPlayer.playVideo();
-                // Buton yazısı onStateChange içinde güncellenecek
-            }
-        });
-    } else { console.error("Müzik toggle butonu bulunamadı."); }
-
-
-    // Happier Than Ever Tıklama
-    if (happierSongElement) {
-        happierSongElement.addEventListener('click', () => {
-             if (!happierPlayer || typeof happierPlayer.playVideo !== 'function') {
-                  console.error("Happier Than Ever oynatıcı hazır değil.");
-                  alert("Şarkı oynatıcı yüklenemedi, sayfayı yenileyin.");
-                  return;
-             }
-            console.log("Happier Than Ever çalınıyor...");
-            if (currentlyPlayingPlayer && currentlyPlayingPlayer !== happierPlayer) {
-                if(currentlyPlayingPlayer === backgroundPlayer) {
-                   pauseBackgroundMusic(false); // Arka planı durdur (buton yazısı değişmesin)
-                } else {
-                   currentlyPlayingPlayer.pauseVideo(); // Diğer şarkıyı durdur
-                }
-            }
-            happierPlayer.playVideo();
-            // currentlyPlayingPlayer = happierPlayer; // StateChange halledecek
-        });
-    } else { console.error("Happier Than Ever elementi bulunamadı."); }
-
-    // Şarkı Ekleme Formu Göster/Gizle
-    if (toggleAddFormButton && addSongSection) {
-        toggleAddFormButton.addEventListener('click', () => {
-            const isVisible = addSongSection.style.display === 'block';
-            addSongSection.style.display = isVisible ? 'none' : 'block';
-             // Buton yazısını da değiştirebiliriz
-             toggleAddFormButton.textContent = isVisible ? 'Şarkı Ekleme Alanını Aç' : 'Şarkı Ekleme Alanını Kapa';
-        });
-    } else { console.error("Şarkı ekleme formu toggle butonu veya bölümü bulunamadı."); }
-
-    // Yeni Şarkı Kaydetme
-    if (saveSongButton) {
-        saveSongButton.addEventListener('click', () => {
-            const titleInput = document.getElementById('new-song-title');
-            const descInput = document.getElementById('new-song-desc');
-            const linkInput = document.getElementById('new-song-link');
-
-            const title = titleInput.value.trim();
-            const description = descInput.value.trim();
-            const link = linkInput.value.trim();
+    // Form gönderme
+    if (addSongForm) {
+        addSongForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const title = document.getElementById('new-song-title').value.trim();
+            const description = document.getElementById('new-song-desc').value.trim();
+            const link = document.getElementById('new-song-link').value.trim();
             const videoId = getYoutubeId(link);
 
             if (title && description && videoId) {
-                 // Aynı şarkı zaten var mı diye kontrol et
-                 if (songs.some(s => s.videoId === videoId)) {
-                     alert("Bu şarkı zaten eklenmiş!");
-                     return;
-                 }
+                if (songs.some(s => s.videoId === videoId)) {
+                    alert("Bu şarkı zaten ekli!");
+                    return;
+                }
                 const newSong = { title, description, videoId };
                 songs.push(newSong);
-                saveSongs(); // localStorage'a kaydet
-                createSongElement(newSong); // Ekrana ekle ve oynatıcıyı oluştur
-
-                // Formu temizle
-                titleInput.value = '';
-                descInput.value = '';
-                linkInput.value = '';
-
-                alert(`"${title}" şarkısı eklendi!`);
-
+                saveSongs();
+                createSongElement(newSong); // Ekrana ekle
+                closeModal();
             } else if (!videoId) {
-                 alert("Geçerli bir YouTube linki bulunamadı. Linki kontrol edin (örn: https://www.youtube.com/watch?v=....).");
-            }
-             else {
-                alert("Lütfen şarkı adı, açıklama ve geçerli bir YouTube linki girin.");
+                alert("Lütfen geçerli bir YouTube video linki girin.");
+            } else {
+                alert("Lütfen tüm alanları doldurun.");
             }
         });
-    } else { console.error("Şarkı kaydet butonu bulunamadı."); }
+    }
+}
 
+
+// --- Genel Event Listener Kurulumu ---
+// Bu fonksiyon onBackgroundPlayerReady içinde çağrılır
+function setupEventListeners() {
+    console.log("Event Listener'lar kuruluyor.");
+
+    // Sanal Sarılma
+    const hugButton = document.getElementById('hug-button');
+    const hugMessage = document.getElementById('hug-message');
+    const catImage = document.getElementById('cat-image');
+    if (hugButton && hugMessage && catImage) {
+        hugButton.addEventListener('click', () => {
+            const messages = [
+                "İstanbul'dan Eskişehir'e sımsıcak bir kardeş sarılması gönderildi! 🤗💜",
+                "Mesafeler olsa da sevgim hep seninle Ablamm! Kocaman sarıldım!",
+                "Şu an yanında olamasam da tüm gücümle sana sarılıyorum! ✨",
+                "Unutma, yalnız değilsin! Bu da benden sana güç veren bir sarılma!",
+                "Bu kedi sarılması sana Behlül'den! 🐾❤️"
+            ];
+            hugMessage.textContent = messages[Math.floor(Math.random() * messages.length)];
+            hugMessage.classList.add('visible');
+            catImage.classList.add('hugged');
+            setTimeout(() => catImage.classList.remove('hugged'), 500);
+            // Mesaj bir süre sonra kaybolabilir
+             setTimeout(() => hugMessage.classList.remove('visible'), 5000);
+        });
+    }
+
+    // Arka Plan Müziği Butonu
+    const musicToggle = document.getElementById('music-toggle');
+    if (musicToggle && backgroundPlayer) {
+        musicToggle.addEventListener('click', () => {
+            playSpecificSong(backgroundPlayer, "Arka Plan Müziği"); // Oynatma/Durdurma mantığı burada
+        });
+        // Başlangıç durumunu ayarla (onBackgroundPlayerReady'de zaten etkinleştirildi)
+        updateMusicToggleButton(false); // Başlangıçta duruyor
+    }
+
+    // Happier Than Ever Tıklama
+    const happierSongElement = document.getElementById('song-happier');
+    if (happierSongElement && happierPlayer) {
+        happierSongElement.addEventListener('click', () => {
+            playSpecificSong(happierPlayer, "Happier Than Ever");
+        });
+    }
+
+    // Kayıtlı şarkılar için tıklama olayları (loadSongs -> createSongElement içinde eklendi)
+
+    // Modal Pencere kurulumu
+    setupModal();
+
+    // AOS Animasyon Kütüphanesini Başlat
+    AOS.init({
+        duration: 800, // Animasyon süresi (ms)
+        once: true,    // Sadece bir kere çalışsın
+        offset: 50,    // Ne kadar görünür olunca başlasın (px)
+        easing: 'ease-out-cubic', // Yumuşak geçiş
+    });
+
+    console.log("Event Listener kurulumu tamamlandı.");
 }
 
 // --- Başlangıç ---
-// Kodun çalışması YouTube API'sinin `onYouTubeIframeAPIReady` fonksiyonunu çağırmasına bağlı.
-// Bu yüzden eski DOMContentLoaded sarmalayıcısı yerine her şey API hazır olduğunda başlıyor.
-console.log("Script yüklendi, YouTube API bekleniyor...");
+// YouTube API yüklendiğinde `onYouTubeIframeAPIReady` otomatik olarak çağrılır.
+// Diğer tüm işlemler oradan tetiklenir.
