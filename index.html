@@ -9,21 +9,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-    <!-- p5.js Kütüphanesi (İsteğe Bağlı - Parçacık Efekti İçin) -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script> -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script> -->
 </head>
 <body>
-    <!-- İsteğe Bağlı: Arka Plan Müziği -->
-    <audio id="background-music" loop>
-        <!-- Buraya Billie Eilish veya sevdiği başka bir sanatçının şarkısının linkini ekle -->
-        <!-- Örnek: <source src="billie_eilish_sarkisi.mp3" type="audio/mpeg"> -->
-        Tarayıcınız ses çalmayı desteklemiyor.
-    </audio>
-    <button id="music-toggle">Müziği Başlat/Durdur</button>
+    <!-- Görünmez YouTube Oynatıcı Alanları -->
+    <div id="player-container" style="position: absolute; top: -9999px; left: -9999px;">
+        <div id="background-player"></div>
+        <div id="happier-than-ever-player"></div>
+        <!-- Dinamik şarkılar için oynatıcılar buraya JS ile eklenecek -->
+    </div>
 
-    <!-- p5.js Canvas Alanı (Eğer kullanacaksan) -->
-    <!-- <div id="canvas-container"></div> -->
+    <button id="music-toggle">Müziği Başlat</button> <!-- Başlangıç metni JS ile ayarlanacak -->
 
     <div class="container">
         <header>
@@ -41,8 +36,8 @@
             <h2>Sanal Kucaklama Köşesi 💜</h2>
             <p>Mesafeler sarılmamıza engel olsa da, sevgimi hissetmene engel değil! Aşağıdaki butona tıkla ve İstanbul'dan gelen sıcacık kucaklamayı hisset!</p>
             <div class="hug-area">
+                <!-- Not: 'sevimli-gotik-kedi.png' adında bir resim bulup aynı klasöre koymalısın -->
                 <img src="sevimli-gotik-kedi.png" alt="Sana sarılan sevimli gotik kedi" class="cat-hug" id="cat-image">
-                <!-- Not: 'sevimli-gotik-kedi.png' adında bir kedi resmi bulup aynı klasöre koymalısın -->
                 <button id="hug-button">Bana Sarıl!</button>
                 <p id="hug-message"></p>
             </div>
@@ -56,19 +51,31 @@
 
         <section id="music-corner">
             <h2>Senin İçin Seçtiklerim 🎶</h2>
-            <p>Belki biraz müzik ruhuna iyi gelir? Senin seveceğini düşündüğüm, güçlü kadınların sesinden birkaç parça:</p>
-            <div class="music-player">
-                <p>Billie Eilish - Happier Than Ever (Akustik gibi)</p>
-                <!-- Gerçek şarkı linkini buraya ekle -->
-                <!-- <audio controls src="happier_than_ever.mp3"></audio> -->
+            <p>Belki biraz müzik ruhuna iyi gelir? Senin seveceğini düşündüğüm, güçlü kadınların sesinden birkaç parça (Tıklayınca çalmaya başlar):</p>
+
+            <div class="music-player clickable-song" id="song-happier" data-youtubeid="5GJWxDKyk3A">
+                <p>Billie Eilish - Happier Than Ever</p>
                 <p class="song-note">Bu şarkı hem hüznü hem de sonrasındaki gücü hatırlatıyor bana.</p>
             </div>
-            <div class="music-player">
-                <p>Sevdiğin Başka Bir Sanatçı - Şarkı Adı</p>
-                <!-- Gerçek şarkı linkini buraya ekle -->
-                <!-- <audio controls src="diger_sarki.mp3"></audio> -->
-                <p class="song-note">Bu da sana enerji versin diye!</p>
+        </section>
+
+        <section id="dynamic-music-corner">
+            <h2>Senin İçin Eklediğim Diğer Şarkılar 🎶</h2>
+            <p>Buraya zamanla senin seveceğini düşündüğüm başka şarkılar da ekleyebilirim. Tıklayınca çalmaya başlar.</p>
+            <div id="dynamic-songs-container">
+                <!-- Kayıtlı şarkılar buraya JS ile eklenecek -->
             </div>
+
+            <!-- Şarkı Ekleme Alanı (Ceyda'ya göndermeden önce gizle!) -->
+            <button id="toggle-add-form-button" style="margin-top:15px; padding: 6px 12px; font-size: 0.9em; background-color: #5a5370; color: #ddd; border: none; border-radius: 5px; cursor: pointer;">Şarkı Ekleme Alanını Aç/Kapa</button>
+            <div id="add-song-section" style="margin-top: 20px; background: #4a455e; padding: 15px; border-radius: 8px; display: none;">
+                 <h3>Yeni Şarkı Ekle (Bu Alanı Gizle!)</h3>
+                 <input type="text" id="new-song-title" placeholder="Şarkı Adı & Sanatçı" style="display: block; margin-bottom: 8px; padding: 10px; width: 95%; border-radius: 4px; border: 1px solid #666; background-color: #3a364a; color: #e0dee6;">
+                 <input type="text" id="new-song-desc" placeholder="Neden Seçtin? (Kısa Not)" style="display: block; margin-bottom: 8px; padding: 10px; width: 95%; border-radius: 4px; border: 1px solid #666; background-color: #3a364a; color: #e0dee6;">
+                 <input type="text" id="new-song-link" placeholder="YouTube Linki (örn: https://www.youtube.com/watch?v=...)" style="display: block; margin-bottom: 12px; padding: 10px; width: 95%; border-radius: 4px; border: 1px solid #666; background-color: #3a364a; color: #e0dee6;">
+                 <button id="save-song-button" style="padding: 10px 18px; background-color: #8a6a99; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">Şarkıyı Kaydet</button>
+            </div>
+            <!-- ----- -->
         </section>
 
         <section id="closing">
@@ -79,8 +86,11 @@
             <p class="signature">Sevgi ve kucaklamalarla,<br>Behlül</p>
         </section>
 
-    </div>
+    </div> <!-- .container sonu -->
 
+    <!-- YouTube API Script'i (script.js'den ÖNCE olmalı) -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- Kendi JavaScript Dosyamız -->
     <script src="script.js"></script>
 </body>
 </html>
