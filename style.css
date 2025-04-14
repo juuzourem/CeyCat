@@ -5,51 +5,57 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth; /* Yumuşak kaydırma */
+}
+
 body {
-    font-family: 'Poppins', sans-serif; /* Okunabilir ana font */
-    background-color: #2c2a3a; /* Koyu mor-gri arka plan */
-    color: #e0dee6; /* Açık lavanta tonu yazı rengi */
+    font-family: 'Poppins', sans-serif;
+    background-color: #1f1d2b; /* Koyu ve modern arka plan */
+    color: #e0dee6;
     line-height: 1.7;
     overflow-x: hidden; /* Yatay kaydırmayı engelle */
-    padding-top: 70px; /* Müzik butonu için boşluk */
+    padding-top: 80px; /* Sabit buton için boşluk */
+    transition: background-color 0.5s ease;
 }
 
 .container {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px 40px;
-    background-color: #3a364a; /* İçerik alanı için biraz daha açık ton */
-    border-radius: 15px;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+    max-width: 850px;
+    margin: 50px auto;
+    padding: 30px 50px;
+    background: linear-gradient(145deg, #2c2a3a, #3a364a); /* Hafif gradyan */
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Başlıklar */
 h1, h2 {
-    font-family: 'Cinzel Decorative', cursive; /* Gotik, şık font */
-    color: #c7a5d1; /* Açık, soluk mor */
+    font-family: 'Cinzel Decorative', cursive;
+    color: #cab9d9; /* Biraz daha canlı mor */
     text-align: center;
-    margin-bottom: 25px;
-    letter-spacing: 1px;
+    margin-bottom: 30px;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
 }
 
 h1 {
-    font-size: 2.8em;
-    margin-bottom: 15px;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    font-size: 3em;
+    margin-bottom: 20px;
 }
 
 h2 {
-    font-size: 2em;
-    border-bottom: 1px solid #5a5370; /* Bölüm ayracı */
-    padding-bottom: 10px;
-    margin-top: 40px; /* Bölümler arası boşluk */
+    font-size: 2.2em;
+    border-bottom: 1px solid #6a5f88; /* Daha belirgin ayraç */
+    padding-bottom: 15px;
+    margin-top: 50px;
 }
 
 /* Paragraflar ve Metin */
 p {
     margin-bottom: 15px;
     font-size: 1.05em;
-    color: #d1cddb; /* Hafif daha okunabilir açık renk */
+    color: #d1cddb;
 }
 
 .intro {
@@ -57,15 +63,78 @@ p {
     font-style: italic;
     color: #b8b2c7;
     margin-bottom: 30px;
+    font-size: 1.1em;
 }
 
-/* Bölümler Arası Boşluk */
+/* Bölümler */
 section {
-    margin-bottom: 40px;
-    padding: 25px;
-    background: rgba(44, 42, 58, 0.6); /* Hafif transparan bölüm arka planı */
-    border-radius: 8px;
+    margin-bottom: 50px;
+    padding: 30px; /* Biraz daha fazla iç boşluk */
+    background: rgba(44, 42, 58, 0.7);
+    border-radius: 12px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
 }
+
+/* Genel Buton Stilleri */
+.stylish-button, #hug-button {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600; /* Biraz daha kalın */
+    background: linear-gradient(135deg, #8a6a99, #a881b4);
+    color: #ffffff;
+    border: none;
+    padding: 12px 28px;
+    font-size: 1.1em;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(138, 106, 153, 0.3);
+    display: inline-block;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.stylish-button:hover, #hug-button:hover {
+    background: linear-gradient(135deg, #a881b4, #8a6a99);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(138, 106, 153, 0.5);
+}
+
+.stylish-button:active, #hug-button:active {
+    transform: translateY(0px) scale(1);
+    box-shadow: 0 3px 10px rgba(138, 106, 153, 0.4);
+}
+
+.stylish-button:disabled {
+    background: #555;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+    transform: none;
+}
+
+
+/* Müzik Toggle Butonu (Sabit) */
+#music-toggle {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    z-index: 1000;
+    background: linear-gradient(135deg, #6a7a99, #8191b4); /* Mavi-Gri */
+    box-shadow: 0 5px 15px rgba(106, 122, 153, 0.3);
+    padding: 10px 20px;
+    font-size: 1em;
+}
+#music-toggle:hover:not(:disabled) {
+    background: linear-gradient(135deg, #8191b4, #6a7a99);
+    box-shadow: 0 8px 20px rgba(106, 122, 153, 0.5);
+}
+#music-toggle.playing {
+    background: linear-gradient(135deg, #996a6a, #b48181); /* Çalarken: Kırmızımsı */
+}
+#music-toggle.playing:hover {
+    background: linear-gradient(135deg, #b48181, #996a6a);
+}
+
 
 /* Sanal Sarılma Bölümü */
 #virtual-hug {
@@ -74,89 +143,78 @@ section {
 
 .hug-area {
     margin-top: 20px;
-    position: relative; /* Mesaj konumu için */
+    position: relative;
 }
 
 .cat-hug {
-    max-width: 150px; /* Kedi resmi boyutu */
+    max-width: 160px; /* Biraz daha büyük */
     height: auto;
     display: block;
-    margin: 15px auto;
+    margin: 20px auto;
     opacity: 0.85;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s ease; /* Zıplama efekti */
 }
 
 .cat-hug:hover {
     opacity: 1;
-    transform: scale(1.05);
+    transform: scale(1.05); /* Hover'da normal büyüme */
+}
+
+.cat-hug.hugged { /* JS ile eklenen class */
+    transform: scale(1.2) rotate(5deg); /* Sarılınca zıplama/dönme */
 }
 
 #hug-button {
-    font-family: 'Poppins', sans-serif;
-    background-color: #8a6a99; /* Mor tonu buton */
-    color: #ffffff;
-    border: none;
-    padding: 12px 25px;
-    font-size: 1.1em;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    margin-top: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-#hug-button:hover {
-    background-color: #a881b4; /* Hover rengi */
-    transform: translateY(-2px);
-}
-
-#hug-button:active {
-    transform: translateY(1px);
+    /* Genel buton stilini kullanıyor */
+    margin-bottom: 10px;
 }
 
 #hug-message {
-    margin-top: 20px;
+    margin-top: 15px;
     font-weight: bold;
-    color: #e8cfff; /* Vurgulu mesaj rengi */
-    min-height: 25px; /* Alanı koru */
-    opacity: 0; /* Başlangıçta görünmez */
+    color: #e8cfff;
+    min-height: 25px;
+    opacity: 0;
     transition: opacity 0.5s ease-in-out;
 }
 
 #hug-message.visible {
-    opacity: 1; /* Görünür yap */
+    opacity: 1;
 }
 
-
-/* Müzik Köşesi */
+/* Müzik Kutucukları */
 .music-player {
-    background: #4a455e;
-    padding: 15px 20px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    border-left: 5px solid #8a6a99; /* Sol kenar vurgusu */
-    transition: background-color 0.3s ease; /* Geçiş efekti */
+    background: rgba(60, 56, 80, 0.8); /* Biraz daha belirgin arka plan */
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border-left: 5px solid #a881b4;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
-.music-player.clickable-song {
-    cursor: pointer;
-}
-
-.music-player.clickable-song:hover {
-    background-color: #5a5370; /* Hover rengi */
-}
-
-.music-player p {
+.music-player p:first-child { /* Şarkı adı */
     margin-bottom: 8px;
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 1.1em;
+    color: #e8cfff; /* Daha belirgin renk */
 }
 
 .song-note {
-    font-size: 0.9em;
+    font-size: 0.95em;
     font-style: italic;
     color: #b8b2c7;
     margin-top: 5px;
     margin-bottom: 0;
+}
+
+.clickable-song {
+    cursor: pointer;
+}
+
+.clickable-song:hover {
+    background-color: rgba(90, 83, 112, 0.9);
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Kapanış ve İmza */
@@ -164,79 +222,161 @@ section {
     text-align: right;
     font-style: italic;
     margin-top: 30px;
-    color: #c7a5d1;
+    color: #cab9d9;
     font-weight: bold;
+    font-size: 1.1em;
 }
 
-/* Müzik Aç/Kapa Butonu */
-#music-toggle {
-    position: fixed; /* Ekranda sabit */
+/* Gizli Şarkı Ekleme Butonu (Behlül için) */
+#open-add-song-modal-button {
+    background: linear-gradient(135deg, #555, #777);
+    font-size: 0.9em;
+    padding: 8px 18px;
+    float: right; /* Sağa yasla */
+    margin-top: 0; /* Diğer butonlarla aynı hizada olmasın */
+    /* CEYDA'YA GÖNDERMEDEN ÖNCE BU SATIRI AKTİF ET: */
+    /* display: none !important; */
+}
+#open-add-song-modal-button:hover {
+    background: linear-gradient(135deg, #777, #555);
+    box-shadow: 0 6px 15px rgba(85, 85, 85, 0.4);
+}
+#dynamic-music-corner::after { /* Clearfix for floated button */
+    content: "";
+    display: table;
+    clear: both;
+}
+
+
+/* Modal Pencere Stilleri */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.4s ease-out;
+}
+
+.modal-content {
+    background: linear-gradient(145deg, #3a364a, #2c2a3a);
+    margin: 10% auto;
+    padding: 35px 45px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 80%;
+    max-width: 550px;
+    border-radius: 15px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    position: relative;
+    animation: slideIn 0.5s ease-out;
+}
+
+.close-modal-button {
+    color: #aaa;
+    position: absolute;
     top: 15px;
-    right: 15px;
-    background-color: rgba(138, 106, 153, 0.8); /* Yarı şeffaf */
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    font-size: 1em;
-    border-radius: 20px;
+    right: 25px;
+    font-size: 32px; /* Biraz daha büyük */
+    font-weight: bold;
+    line-height: 1; /* Dikey hizalama için */
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.close-modal-button:hover,
+.close-modal-button:focus {
+    color: #cab9d9;
+    text-decoration: none;
     cursor: pointer;
-    z-index: 1000; /* Diğer her şeyin üstünde */
-    transition: background-color 0.3s ease, opacity 0.3s ease;
-    opacity: 0.8;
+    transform: scale(1.1);
 }
 
-#music-toggle:hover {
-    background-color: rgba(168, 129, 180, 1); /* Hover'da daha opak */
-    opacity: 1;
+/* Modal Form Stilleri */
+#add-song-form h2 {
+    margin-top: 0; /* Modal başlığı için üst boşluğu kaldır */
+    margin-bottom: 25px;
+    font-size: 1.8em; /* Biraz daha küçük */
 }
 
-#music-toggle:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+#add-song-form .form-group {
+    margin-bottom: 20px;
 }
 
+#add-song-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: #cab9d9;
+    font-weight: 600; /* Kalın yazı */
+    font-size: 0.95em;
+}
 
-/* Şarkı Ekleme Alanı Stilleri (İsteğe Bağlı İyileştirmeler) */
-#add-song-section h3 {
-    font-family: 'Poppins', sans-serif; /* Başlık için farklı font */
+#add-song-form input[type="text"],
+#add-song-form textarea {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
     color: #e0dee6;
-    text-align: left;
-    border-bottom: none; /* h2 stilini iptal et */
-    font-size: 1.3em;
-    margin-bottom: 15px;
+    font-size: 1em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'Poppins', sans-serif; /* Fontu miras al */
 }
 
+#add-song-form input[type="text"]:focus,
+#add-song-form textarea:focus {
+    outline: none;
+    border-color: #a881b4;
+    box-shadow: 0 0 10px rgba(168, 129, 180, 0.3);
+}
+
+#add-song-form textarea {
+    resize: vertical;
+    min-height: 70px; /* Biraz daha yüksek */
+}
+
+#add-song-form small {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.8em;
+    color: #aaa;
+}
+
+#add-song-form .form-button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 10px;
+    font-size: 1.2em;
+}
+
+/* Animasyon Keyframes */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
 
 /* Mobil Uyum (Basit Düzeyde) */
 @media (max-width: 768px) {
     body {
-        padding-top: 60px; /* Mobil için buton boşluğu */
+        padding-top: 70px;
     }
     .container {
-        margin: 20px 10px;
-        padding: 15px 20px;
+        margin: 20px 15px; /* Kenarlardan boşluk */
+        padding: 20px 25px;
     }
-
-    h1 {
-        font-size: 2.2em;
-    }
-
-    h2 {
-        font-size: 1.7em;
-    }
-
-    p {
-        font-size: 1em;
-    }
-
-    .cat-hug {
-        max-width: 120px;
-    }
-
-    #hug-button {
-        padding: 10px 20px;
-        font-size: 1em;
-    }
+    h1 { font-size: 2.5em; }
+    h2 { font-size: 1.9em; }
+    p { font-size: 1em; }
+    section { padding: 20px; }
 
     #music-toggle {
         top: 10px;
@@ -244,8 +384,11 @@ section {
         padding: 8px 15px;
         font-size: 0.9em;
     }
-
-     #add-song-section input {
+    .modal-content {
         width: 90%;
+        margin: 15% auto;
+        padding: 25px 30px;
     }
+    .cat-hug { max-width: 140px; }
+    #open-add-song-modal-button { font-size: 0.8em; padding: 6px 12px;}
 }
