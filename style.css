@@ -11,7 +11,7 @@ body {
     color: #e0dee6; /* Açık lavanta tonu yazı rengi */
     line-height: 1.7;
     overflow-x: hidden; /* Yatay kaydırmayı engelle */
-    padding-top: 60px; /* Müzik butonu için boşluk */
+    padding-top: 70px; /* Müzik butonu için boşluk */
 }
 
 .container {
@@ -62,7 +62,7 @@ p {
 /* Bölümler Arası Boşluk */
 section {
     margin-bottom: 40px;
-    padding: 20px;
+    padding: 25px;
     background: rgba(44, 42, 58, 0.6); /* Hafif transparan bölüm arka planı */
     border-radius: 8px;
 }
@@ -131,10 +131,19 @@ section {
 /* Müzik Köşesi */
 .music-player {
     background: #4a455e;
-    padding: 15px;
+    padding: 15px 20px;
     margin-bottom: 15px;
     border-radius: 8px;
     border-left: 5px solid #8a6a99; /* Sol kenar vurgusu */
+    transition: background-color 0.3s ease; /* Geçiş efekti */
+}
+
+.music-player.clickable-song {
+    cursor: pointer;
+}
+
+.music-player.clickable-song:hover {
+    background-color: #5a5370; /* Hover rengi */
 }
 
 .music-player p {
@@ -148,13 +157,6 @@ section {
     color: #b8b2c7;
     margin-top: 5px;
     margin-bottom: 0;
-}
-
-audio {
-    width: 100%; /* Tam genişlik */
-    margin-top: 10px;
-    /* Tarayıcı kontrollerini biraz stile edebiliriz ama sınırlıdır */
-    filter: contrast(0.8) brightness(1.1);
 }
 
 /* Kapanış ve İmza */
@@ -174,32 +176,44 @@ audio {
     background-color: rgba(138, 106, 153, 0.8); /* Yarı şeffaf */
     color: white;
     border: none;
-    padding: 8px 15px;
-    font-size: 0.9em;
+    padding: 10px 18px;
+    font-size: 1em;
     border-radius: 20px;
     cursor: pointer;
     z-index: 1000; /* Diğer her şeyin üstünde */
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+    opacity: 0.8;
 }
 
 #music-toggle:hover {
     background-color: rgba(168, 129, 180, 1); /* Hover'da daha opak */
+    opacity: 1;
 }
 
-/* p5.js Canvas Konteyneri (Eğer kullanırsan) */
-#canvas-container {
-    position: fixed; /* Arka planda sabit */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1; /* İçeriğin arkasında */
+#music-toggle:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
+
+
+/* Şarkı Ekleme Alanı Stilleri (İsteğe Bağlı İyileştirmeler) */
+#add-song-section h3 {
+    font-family: 'Poppins', sans-serif; /* Başlık için farklı font */
+    color: #e0dee6;
+    text-align: left;
+    border-bottom: none; /* h2 stilini iptal et */
+    font-size: 1.3em;
+    margin-bottom: 15px;
+}
+
 
 /* Mobil Uyum (Basit Düzeyde) */
 @media (max-width: 768px) {
+    body {
+        padding-top: 60px; /* Mobil için buton boşluğu */
+    }
     .container {
-        margin: 20px auto;
+        margin: 20px 10px;
         padding: 15px 20px;
     }
 
@@ -227,6 +241,11 @@ audio {
     #music-toggle {
         top: 10px;
         right: 10px;
-        padding: 6px 12px;
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
+
+     #add-song-section input {
+        width: 90%;
     }
 }
