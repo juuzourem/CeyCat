@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canım Ablamm Ceyda'ya Özel ✨</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts (Gotik ve Okunabilir) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+    <!-- p5.js Kütüphanesi (İsteğe Bağlı - Parçacık Efekti İçin) -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script> -->
+</head>
+<body>
+    <!-- İsteğe Bağlı: Arka Plan Müziği -->
+    <audio id="background-music" loop>
+        <!-- Buraya Billie Eilish veya sevdiği başka bir sanatçının şarkısının linkini ekle -->
+        <!-- Örnek: <source src="billie_eilish_sarkisi.mp3" type="audio/mpeg"> -->
+        Tarayıcınız ses çalmayı desteklemiyor.
+    </audio>
+    <button id="music-toggle">Müziği Başlat/Durdur</button>
+
+    <!-- p5.js Canvas Alanı (Eğer kullanacaksan) -->
+    <!-- <div id="canvas-container"></div> -->
+
+    <div class="container">
+        <header>
+            <h1>Canım Ablamm Ceyda'ya,</h1>
+            <p class="intro">Bu köşe sadece senin için, Behlül'den... İstanbul'dan Eskişehir'e kocaman sevgilerimle hazırlandı. Biraz olsun içini ısıtmak, o güzel yüzünü güldürmek istedim.</p>
+        </header>
+
+        <section id="understanding">
+            <h2>Biliyorum, Kolay Değil...</h2>
+            <p>Ablamm, son zamanlarda ne kadar zorlandığını, omuzlarındaki yükü hissedebiliyorum. Ailen, gelecek kaygın, Eskişehir'deki düzenin... Hepsi üst üste gelince insanın morali bozuluyor, biliyorum. Dün de ben istemeden kalbini kırdım. O anki ifadem ne olursa olsun, önemli olan senin nasıl hissettiğindi. Senin hislerin, kim olduğun, kimi sevdiğin çok değerli ve %100 gerçek. Sen harikasın, tam da olduğun gibi. Kimsenin bunu sorgulamasına izin verme, hele benim hiç haddim değil. Özür dilerim eğer o an seni daha da üzdüysem.</p>
+            <p>Sen tanıdığım en güçlü insanlardan birisin ama en güçlü kalpler bile bazen yorulur ve sıcacık bir sarılmaya ihtiyaç duyar. Keşke şimdi yanında olup sana kocaman sarılabilsem...</p>
+        </section>
+
+        <section id="virtual-hug">
+            <h2>Sanal Kucaklama Köşesi 💜</h2>
+            <p>Mesafeler sarılmamıza engel olsa da, sevgimi hissetmene engel değil! Aşağıdaki butona tıkla ve İstanbul'dan gelen sıcacık kucaklamayı hisset!</p>
+            <div class="hug-area">
+                <img src="sevimli-gotik-kedi.png" alt="Sana sarılan sevimli gotik kedi" class="cat-hug" id="cat-image">
+                <!-- Not: 'sevimli-gotik-kedi.png' adında bir kedi resmi bulup aynı klasöre koymalısın -->
+                <button id="hug-button">Bana Sarıl!</button>
+                <p id="hug-message"></p>
+            </div>
+        </section>
+
+        <section id="strength">
+            <h2>Senin Gücün ve Geleceğin</h2>
+            <p>Unutma Ablamm, 18'ine az kaldı! O gün geldiğinde kendi kararlarını verecek, kendi yolunu çizeceksin. O harika üniversiteyi kazanıp kendi hayatını kuracağına eminim. Sen çok zeki, yetenekli ve azimli birisin. Bu zor günler geçecek ve sen kendi ışığınla parlayacaksın. Eskişehir'deki arkadaşlarını bırakmak zor biliyorum ama yeni başlangıçlar da güzel olabilir. Ve unutma, nerede olursan ol, ben hep arkandayım, sadece bir mesaj uzağındayım.</p>
+            <p>Hedeflerine odaklan, o güzel enerjini yüksek tut. Başaracaksın!</p>
+        </section>
+
+        <section id="music-corner">
+            <h2>Senin İçin Seçtiklerim 🎶</h2>
+            <p>Belki biraz müzik ruhuna iyi gelir? Senin seveceğini düşündüğüm, güçlü kadınların sesinden birkaç parça:</p>
+            <div class="music-player">
+                <p>Billie Eilish - Happier Than Ever (Akustik gibi)</p>
+                <!-- Gerçek şarkı linkini buraya ekle -->
+                <!-- <audio controls src="happier_than_ever.mp3"></audio> -->
+                <p class="song-note">Bu şarkı hem hüznü hem de sonrasındaki gücü hatırlatıyor bana.</p>
+            </div>
+            <div class="music-player">
+                <p>Sevdiğin Başka Bir Sanatçı - Şarkı Adı</p>
+                <!-- Gerçek şarkı linkini buraya ekle -->
+                <!-- <audio controls src="diger_sarki.mp3"></audio> -->
+                <p class="song-note">Bu da sana enerji versin diye!</p>
+            </div>
+        </section>
+
+        <section id="closing">
+            <h2>Her Zaman Yanındayım</h2>
+            <p>Umarım bu küçük sürpriz yüzünde bir tebessüm oluşturmuştur canım Ablamm. Ne zaman konuşmak istersen, içini dökmek istersen ya da sadece sessizliğe bir arkadaş istersen, ben buradayım. Sakın unutma!</p>
+            <p>Kedileri sevdiğini biliyorum, umarım sitedeki minik kedi detayı hoşuna gitmiştir. 🐾</p>
+            <p>Kendine çok çok iyi bak. Seni çok seviyorum!</p>
+            <p class="signature">Sevgi ve kucaklamalarla,<br>Behlül</p>
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
